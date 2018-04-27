@@ -8,19 +8,21 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 	private Board board = new Board();
 	private JPanel contentPane;
 	private int mouseX, mouseY;
-	private enum LineState
+	private enum ObjectState
 	{
 		NOT_CLICKED,
 		HELD,
 		CLICKED,
 		PLACING_LINE
 	}
-	LineState lineState;
+	ObjectState lineState, switchState, readerState;
 	
 	public GUI(String name)
 	{
 		super(name);
-		lineState = LineState.NOT_CLICKED;
+		lineState = ObjectState.NOT_CLICKED;
+		switchState = ObjectState.NOT_CLICKED;
+		readerState = ObjectState.NOT_CLICKED;
 		setSize(500, 500);
 		addMouseMotionListener(this);
 		addMouseListener(this);
@@ -33,7 +35,7 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 	public void mouseDragged(MouseEvent e)
 	{
 		//System.out.println(e);
-		System.out.println(lineState);
+		System.out.println(switchState);
 	}
 	
 	public void mouseMoved(MouseEvent e)
@@ -42,7 +44,8 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 		mouseY = e.getY() - 30;
 		//System.out.println(e);
 		//System.out.println(mouseX + " " + mouseY);
-		System.out.println(lineState);
+		System.out.println(switchState);
+		repaint();
 	}
 	
 	public void mouseClicked(MouseEvent e)
@@ -65,16 +68,47 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 		int xPos = e.getX() - 8;
 		int yPos = e.getY() - 30;
 		System.out.println(xPos + " " + yPos);
-		System.out.println(lineState);
-		boolean equation = xPos >= 5 && xPos <= 40 && yPos >= 5 && yPos <= 25;
-		if(equation && lineState == LineState.NOT_CLICKED) {
-			lineState = LineState.HELD;
+		System.out.println(switchState);
+		boolean wireEquation = xPos >= 5 && xPos <= 40 && yPos >= 5 && yPos <= 25;
+		boolean switchEquation = xPos >= 45 && xPos <= 90 && yPos >= 5 && yPos <= 25;
+		boolean readerEquation = xPos >= 95 && xPos <= 145 && yPos >= 5 && yPos <= 25;
+		if(wireEquation && lineState == ObjectState.NOT_CLICKED) {
+			lineState = ObjectState.HELD;
 		}
-		else if(lineState == LineState.CLICKED) {
-			lineState = LineState.PLACING_LINE;
+		else if(lineState == ObjectState.CLICKED && snap(mouseY) > 30) {
+			lineState = ObjectState.PLACING_LINE;
 		}
-		if(!equation && lineState == LineState.NOT_CLICKED) {
-			System.out.println(board.amountOfLines());
+		if(!wireEquation && lineState == ObjectState.NOT_CLICKED) {
+			System.out.println(board.lineCount());
+		}
+		if(switchEquation && switchState == ObjectState.NOT_CLICKED) {
+			switchState = ObjectState.HELD;
+		}
+		else if(switchState == ObjectState.CLICKED && snap(mouseY) > 30) {
+			switchState = ObjectState.PLACING_LINE;
+		}
+		if(!switchEquation && switchState == ObjectState.NOT_CLICKED) {
+			System.out.println(board.switchCount());
+		}
+		if(readerEquation && readerState == ObjectState.NOT_CLICKED) {
+			readerState = ObjectState.HELD;
+		}
+		else if(readerState == ObjectState.CLICKED && snap(mouseY) > 30) {
+			readerState = ObjectState.PLACING_LINE;
+		}
+		if(!readerEquation && readerState == ObjectState.NOT_CLICKED) {
+			System.out.println(board.readerCount());
+		}
+		if(!wireEquation && !switchEquation && !readerEquation) {
+			for(int i = 0; i < board.switchCount(); i++) {
+				Switch s = board.getSwitch(i);
+				if(new Switch(snap(mouseX), snap(mouseY)).equals(s)) {
+					s.toggle();
+					s.run();
+					repaint();
+					break;
+				}
+			}
 		}
 	}
 	
@@ -83,11 +117,23 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 		int xPos = e.getX() - 8;
 		int yPos = e.getY() - 30;
 		//System.out.println(xPos + " " + yPos);
-		System.out.println(lineState);
-		if(lineState == LineState.HELD) lineState = LineState.CLICKED;
-		else if(lineState == LineState.PLACING_LINE) {
-			board.addWire(mouseX, mouseY);
-			lineState = LineState.NOT_CLICKED;
+		System.out.println(switchState);
+		if(lineState == ObjectState.HELD) lineState = ObjectState.CLICKED;
+		else if(lineState == ObjectState.PLACING_LINE) {
+			board.addWire(snap(mouseX), snap(mouseY));
+			lineState = ObjectState.NOT_CLICKED;
+			repaint();
+		}
+		if(switchState == ObjectState.HELD) switchState = ObjectState.CLICKED;
+		else if(switchState == ObjectState.PLACING_LINE) {
+			board.addSwitch(snap(mouseX), snap(mouseY));
+			switchState = ObjectState.NOT_CLICKED;
+			repaint();
+		}
+		if(readerState == ObjectState.HELD) readerState = ObjectState.CLICKED;
+		else if(readerState == ObjectState.PLACING_LINE) {
+			board.addReader(snap(mouseX), snap(mouseY));
+			readerState = ObjectState.NOT_CLICKED;
 			repaint();
 		}
 	}
@@ -101,13 +147,35 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 	{
 		public void paint(Graphics g)
 		{
-			char lines[] = {'L', 'i', 'n', 'e'};
-			g.drawChars(lines, 0, 4, 10, 20);
-			g.drawRect(5, 5, 35, 20);
-			for(int i = 0; i < board.amountOfLines(); i++) {
-				Wire wire = board.getWire(i);
-				g.drawRect(wire.getX(), wire.getY(), wire.getLength(), 0);
+			g.drawRect(0, 30, getWidth(), 0); //Separate controls from board
+			g.drawChars("Wire".toCharArray(), 0, 4, 10, 20); //Draw button for
+			g.drawRect(5, 5, 35, 20); //Creation of wire
+			g.drawChars("Switch".toCharArray(), 0, 6, 50, 20); //Draw button for
+			g.drawRect(45, 5, 45, 20); //Creation of switch
+			g.drawChars("Reader".toCharArray(), 0, 6, 100, 20); //Draw button for
+			g.drawRect(95, 5, 50, 20); //Creation of reader
+			for(int i = 0; i < board.lineCount(); i++) { //Draw each wire
+				board.getWire(i).draw(g);
+			}
+			for(int i = 0; i < board.switchCount(); i++) {
+				board.getSwitch(i).draw(g);
+			}
+			for(int i = 0; i < board.readerCount(); i++) {
+				board.getReader(i).draw(g);
+			}
+			if(lineState == ObjectState.CLICKED || lineState == ObjectState.PLACING_LINE) { //Draw line to show user where a wire would be placed
+				new Wire(snap(mouseX), snap(mouseY), 20, 0).draw(g);
+			}
+			if(switchState == ObjectState.CLICKED || switchState == ObjectState.PLACING_LINE) {
+				new Switch(snap(mouseX), snap(mouseY)).draw(g);
+			}
+			if(readerState == ObjectState.CLICKED || readerState == ObjectState.PLACING_LINE) {
+				new Reader(snap(mouseX), snap(mouseY)).draw(g);
 			}
 		}
+	}
+	
+	private int snap(int num) {
+		return num - (num % 20);
 	}
 }
