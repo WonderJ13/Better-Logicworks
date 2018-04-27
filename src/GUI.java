@@ -35,7 +35,7 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 	public void mouseDragged(MouseEvent e)
 	{
 		//System.out.println(e);
-		System.out.println(switchState);
+		//System.out.println(switchState);
 	}
 	
 	public void mouseMoved(MouseEvent e)
@@ -44,7 +44,7 @@ public class GUI extends JFrame implements MouseMotionListener, MouseListener
 		mouseY = e.getY() - 30;
 		//System.out.println(e);
 		//System.out.println(mouseX + " " + mouseY);
-		System.out.println(switchState);
+		//System.out.println(switchState);
 		repaint();
 	}
 	

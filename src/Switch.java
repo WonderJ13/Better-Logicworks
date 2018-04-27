@@ -21,7 +21,9 @@ public class Switch extends Item
 	
 	public void run() {
 		ran = true;
+		//System.out.println("In Switch run");
 		output.run();
+		//System.out.println("Leaving Switch run");
 		ran = false;
 	}
 }

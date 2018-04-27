@@ -22,7 +22,7 @@ public class Reader extends Item
 	public void run() {
 		ran = true;
 		state = input.currentState();
-		System.out.println(state);
+		System.out.println("Reader: " + state);
 		ran = false;
 	}
 }

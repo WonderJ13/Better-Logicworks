@@ -6,7 +6,7 @@ public class Wire extends Item
 	
 	public Wire(int x, int y, int length, int dir) { //Constructor
 		super(x, y);
-		source = false;
+		source = true;
 		this.length = length;
 		this.dir = dir;
 	}
@@ -52,7 +52,10 @@ public class Wire extends Item
 		} else {
 			y1 += length;
 		}
-		return (i.getX() == x1 && i.getY() == y1) || (i.getX() == x || i.getY() == y);
+		System.out.println("I: (" + i.getX() + ", " + i.getY() + ")");
+		System.out.println("T: (" + x + ", " + y + ")");
+		System.out.println("A: (" + x1 + ", " + y1 + ")");
+		return (i.getX() == x1 && i.getY() == y1) || (i.getX() == x && i.getY() == y);
 	}
 	
 	public void connect(Item i) {
@@ -62,12 +65,23 @@ public class Wire extends Item
 	
 	public void run() {
 		ran = true;
-		state = input.isSource() ? input.currentState() : false || output.isSource() ? output.currentState() : false;
+		if(input.hasRan()) {
+			state = input.currentState();
+		} else if(output.hasRan()) {
+			state = output.currentState();
+		} else {
+			state = (input.isSource() ? input.currentState() : false) || (output.isSource() ? output.currentState() : false);
+		}
+		System.out.println("Wire: " + state);
 		if(!input.hasRan()) {
+			System.out.println("Calling input");
 			input.run();
+			System.out.println("Called input");
 		}
 		if(!output.hasRan()) {
+			System.out.println("Calling output");
 			output.run();
+			System.out.println("Called output");
 		}
 		ran = false;
 	}
