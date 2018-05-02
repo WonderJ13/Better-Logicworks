@@ -15,9 +15,9 @@ public class Board
 		readers = new ArrayList<Reader>();
 	}
 	
-	public void addWire(int x, int y) { //Public method: creates a new wire and puts it in the list
-		if(wires.indexOf(new Wire(x, y, 0, 0)) != -1) return;
-		Wire newWire = new Wire(x, y, 20, 0);
+	public void addWire(int x, int y, int dir) { //Public method: creates a new wire and puts it in the list
+		if(wires.indexOf(new Wire(x, y, dir, 20)) != -1) return;
+		Wire newWire = new Wire(x, y, dir, 20);
 		for(int i = 0; i < lineCount(); i++) {
 			System.out.println(newWire.canConnect(wires.get(i)));
 			System.out.println(wires.get(i).canConnect(newWire));
@@ -45,8 +45,8 @@ public class Board
 	}
 	
 	public void addSwitch(int x, int y) {
-		if(switches.indexOf(new Switch(x, y)) != -1) return;
-		Switch newSwitch = new Switch(x, y);
+		if(switches.indexOf(new Switch(x, y, 0)) != -1) return;
+		Switch newSwitch = new Switch(x, y, 0);
 		for(int i = 0; i < lineCount(); i++) {
 			if(newSwitch.canConnect(wires.get(i)) || wires.get(i).canConnect(newSwitch)) {
 				System.out.println("connected wire");
@@ -72,8 +72,8 @@ public class Board
 	}
 	
 	public void addReader(int x, int y) {
-		if(readers.indexOf(new Reader(x, y)) != -1) return;
-		Reader newReader = new Reader(x, y);
+		if(readers.indexOf(new Reader(x, y, 0)) != -1) return;
+		Reader newReader = new Reader(x, y, 0);
 		for(int i = 0; i < lineCount(); i++) {
 			if(newReader.canConnect(wires.get(i)) || wires.get(i).canConnect(newReader)) {
 				System.out.println("connected wire");

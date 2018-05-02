@@ -1,8 +1,8 @@
 import java.awt.Graphics;
 public class Reader extends Item
 {
-	public Reader(int x, int y) {
-		super(x, y);
+	public Reader(int x, int y, int dir) {
+		super(x, y, dir);
 		source = false;
 	}
 	
@@ -16,12 +16,15 @@ public class Reader extends Item
 	}
 	
 	public void connect(Item i) {
-		input = i;
+		connections.add(i);
 	}
 	
 	public void run() {
 		ran = true;
-		state = input.currentState();
+		state = false;
+		for(int i = 0; i < connections.size(); i++) {
+			state |= connections.get(i).currentState();
+		}
 		System.out.println("Reader: " + state);
 		ran = false;
 	}

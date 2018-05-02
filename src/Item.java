@@ -1,17 +1,18 @@
 import java.awt.Graphics;
+import java.util.ArrayList;
 public class Item
 {
-	protected int x, y;
+	protected int x, y, dir;
 	protected boolean state, ran, source;
-	protected Item input, output;
+	protected ArrayList<Item> connections;
 	
-	public Item(int x, int y) {
+	public Item(int x, int y, int dir) {
 		this.x = x;
 		this.y = y;
+		this.dir = dir;
 		state = false;
 		ran = false;
-		input = null;
-		output = null;
+		connections = new ArrayList<Item>();
 	}
 	
 	public int getX() {
@@ -22,13 +23,17 @@ public class Item
 		return y;
 	}
 	
+	public int getDirection() {
+		return dir;
+	}
+	
 	public void toggle() {
 		state = !state;
 	}
 	
 	public boolean equals(Object o2) {
 		Item i2 = (Item) o2;
-		return this.getX() == i2.getX() && this.getY() == i2.getY();
+		return this.getX() == i2.getX() && this.getY() == i2.getY() && this.getDirection() == i2.getDirection();
 	}
 	
 	public void draw(Graphics g) {

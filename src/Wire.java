@@ -1,30 +1,16 @@
 import java.awt.Graphics;
 public class Wire extends Item
 {
-	private int length, dir; //Instance Variables
-	private Item con0, con1; //More Instance Variables
+	private int length; //Instance Variables
 	
-	public Wire(int x, int y, int length, int dir) { //Constructor
-		super(x, y);
+	public Wire(int x, int y, int dir, int length) { //Constructor
+		super(x, y, dir);
 		source = true;
 		this.length = length;
-		this.dir = dir;
-	}
-	
-	public void connectWire0(Item wire) { //public method: available to use by other classes
-		con0 = wire;
-	}
-	
-	public void connectWire1(Item wire) { //public method: available to use by other classes
-		con1 = wire;
 	}
 	
 	public int getLength() { //public method: returns length of wire
 		return length;
-	}
-	
-	public int getDirection() { //public method: returns direction
-		return dir;
 	}
 	
 	public void draw(Graphics g) {
@@ -52,36 +38,49 @@ public class Wire extends Item
 		} else {
 			y1 += length;
 		}
-		System.out.println("I: (" + i.getX() + ", " + i.getY() + ")");
-		System.out.println("T: (" + x + ", " + y + ")");
-		System.out.println("A: (" + x1 + ", " + y1 + ")");
-		return (i.getX() == x1 && i.getY() == y1) || (i.getX() == x && i.getY() == y);
+		int ix1 = i.getX(), iy1 = i.getY(), idir = i.getDirection();
+		if(idir == 0) {
+			ix1 += length;
+		} else if(idir == 1) {
+			iy1 -= length;
+		} else if(idir == 2) {
+			ix1 -= length;
+		} else {
+			iy1 += length;
+		}
+		//System.out.println("I: (" + i.getX() + ", " + i.getY() + ")");
+		//System.out.println("T: (" + x + ", " + y + ")");
+		//System.out.println("A: (" + x1 + ", " + y1 + ")");
+		return (i.getX() == x1 && i.getY() == y1) || (i.getX() == x && i.getY() == y) || (ix1 == x1 && iy1 == y1) || (ix1 == x && iy1 == y);
 	}
 	
 	public void connect(Item i) {
-		if(input == null) input = i;
-		else if(output == null) output = i;
+		connections.add(i);
 	}
 	
 	public void run() {
 		ran = true;
-		if(input.hasRan()) {
-			state = input.currentState();
-		} else if(output.hasRan()) {
-			state = output.currentState();
-		} else {
-			state = (input.isSource() ? input.currentState() : false) || (output.isSource() ? output.currentState() : false);
+		state = false;
+		boolean found = false;
+		for(int i = 0; i < connections.size(); i++) {
+			if(connections.get(i).hasRan()) {
+				state = connections.get(i).currentState();
+				found = true;
+				break;
+			}
+		}
+		if(!found) {
+			for(int i = 0; i < connections.size(); i++) {
+				state |= (connections.get(i).isSource() ? connections.get(i).currentState() : false);
+			}
 		}
 		System.out.println("Wire: " + state);
-		if(!input.hasRan()) {
-			System.out.println("Calling input");
-			input.run();
-			System.out.println("Called input");
-		}
-		if(!output.hasRan()) {
-			System.out.println("Calling output");
-			output.run();
-			System.out.println("Called output");
+		for(int i = 0; i < connections.size(); i++) {
+			if(!connections.get(i).hasRan() && !(connections.get(i) instanceof Switch)) {
+				System.out.println("Calling input");
+				connections.get(i).run();
+				System.out.println("Called input");
+			}
 		}
 		ran = false;
 	}

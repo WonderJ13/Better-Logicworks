@@ -1,8 +1,8 @@
 import java.awt.Graphics;
 public class Switch extends Item
 {
-	public Switch(int x, int y) {
-		super(x, y);
+	public Switch(int x, int y, int dir) {
+		super(x, y, dir);
 		source = true;
 	}
 	
@@ -16,14 +16,16 @@ public class Switch extends Item
 	}
 	
 	public void connect(Item i) {
-		output = i;
+		connections.add(i);
 	}
 	
 	public void run() {
 		ran = true;
-		//System.out.println("In Switch run");
-		output.run();
-		//System.out.println("Leaving Switch run");
+		System.out.println("In Switch run");
+		for(int i = 0; i < connections.size(); i++) {
+			connections.get(i).run();
+		}
+		System.out.println("Leaving Switch run");
 		ran = false;
 	}
 }
