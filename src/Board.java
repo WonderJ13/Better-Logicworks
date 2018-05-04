@@ -1,124 +1,116 @@
 import java.util.ArrayList; //Just an array that'll increase in size automatically
 public class Board
 {
-	private ArrayList<Wire> wires; //Instance Variable: list of wires
-	/* <Wire> means the arraylist will accept objects of type Wire 
-	 * This can easily be changed to <Integer> or <String> to fit
-	 * any object you want */
-	 private ArrayList<Switch> switches;
-	 private ArrayList<Reader> readers;
+	private ArrayList<NonLogic> nonLogicItems;
+	private ArrayList<Logic> logicItems;
 	
 	public Board() //Constructor
 	{
-		wires = new ArrayList<Wire>();
-		switches = new ArrayList<Switch>();
-		readers = new ArrayList<Reader>();
+		nonLogicItems = new ArrayList<NonLogic>();
+		logicItems = new ArrayList<Logic>();
+	}
+	
+	private void addNoLogic(NonLogic nl) {
+		for(int i = 0; i < nonLogicItems.size(); i++) {
+			if(nl.canConnect(nonLogicItems.get(i)) || nonLogicItems.get(i).canConnect(nl)) {
+				System.out.println("Connected " + nonLogicItems.get(i).getClass().toString());
+				nl.connect(nonLogicItems.get(i));
+				nonLogicItems.get(i).connect(nl);
+			}
+		}
+		for(int i = 0; i < logicItems.size(); i++) {
+			System.out.println("hi");
+			Logic l = logicItems.get(i);
+			for(int j = 0; j < l.numOfInputs(); j++) {
+				if(l.getInput(j).canConnect(nl) || nl.canConnect(l.getInput(j))) {
+					System.out.println("connecting input wire");
+					l.getInput(j).connect(nl);
+					nl.connect(l.getInput(j));
+				}
+			}
+			for(int j = 0; j < l.numOfOutputs(); j++) {
+				if(l.getOutput(j).canConnect(nl) || nl.canConnect(l.getOutput(j))) {
+					System.out.println("connecting output wire");
+					l.getOutput(j).connect(nl);
+					nl.connect(l.getOutput(j));
+				}
+			}
+		}
+		System.out.println("end of addnologic");
+		nonLogicItems.add(nl);
+	}
+	
+	private void addLogic(Logic l) {
+		for(int i = 0; i < nonLogicItems.size(); i++) {
+			for(int j = 0; j < l.numOfInputs(); j++) {
+				if(l.getInput(j).canConnect(nonLogicItems.get(i)) || nonLogicItems.get(i).canConnect(l.getInput(j))) {
+					System.out.println("Connected input " + nonLogicItems.get(i).getClass().toString());
+					l.getInput(j).connect(nonLogicItems.get(i));
+					nonLogicItems.get(i).connect(l.getInput(j));
+				}
+			}
+			for(int j = 0; j < l.numOfOutputs(); j++) {
+				if(l.getOutput(j).canConnect(nonLogicItems.get(i)) || nonLogicItems.get(i).canConnect(l.getOutput(j))) {
+					System.out.println("Connected output " + nonLogicItems.get(i).getClass().toString());
+					l.getOutput(j).connect(nonLogicItems.get(i));
+					nonLogicItems.get(i).connect(l.getOutput(j));
+				}
+			}
+		}
+		logicItems.add(l);
 	}
 	
 	public void addWire(int x, int y, int dir) { //Public method: creates a new wire and puts it in the list
-		if(wires.indexOf(new Wire(x, y, dir, 20)) != -1) return;
+		if(nonLogicItems.indexOf(new Wire(x, y, dir, 20)) != -1) return;
 		Wire newWire = new Wire(x, y, dir, 20);
-		for(int i = 0; i < lineCount(); i++) {
-			System.out.println(newWire.canConnect(wires.get(i)));
-			System.out.println(wires.get(i).canConnect(newWire));
-			if(newWire.canConnect(wires.get(i)) || wires.get(i).canConnect(newWire)) {
-				System.out.println("connected wire");
-				newWire.connect(wires.get(i));
-				wires.get(i).connect(newWire);
-			}
-		}
-		for(int i = 0; i < switchCount(); i++) {
-			if(newWire.canConnect(switches.get(i)) || switches.get(i).canConnect(newWire)) {
-				System.out.println("connected switch");
-				newWire.connect(switches.get(i));
-				switches.get(i).connect(newWire);
-			}
-		}
-		for(int i = 0; i < readerCount(); i++) {
-			if(newWire.canConnect(readers.get(i)) || readers.get(i).canConnect(newWire)) {
-				System.out.println("connected reader");
-				newWire.connect(readers.get(i));
-				readers.get(i).connect(newWire);
-			}
-		}
-		wires.add(newWire);
+		addNoLogic(newWire);
 	}
 	
 	public void addSwitch(int x, int y) {
-		if(switches.indexOf(new Switch(x, y, 0)) != -1) return;
+		System.out.println("indexof: " + nonLogicItems.indexOf(new Switch(x, y, 0)));
+		if(nonLogicItems.indexOf(new Switch(x, y, 0)) != -1) return;
+		System.out.println("switch going into addnologic");
 		Switch newSwitch = new Switch(x, y, 0);
-		for(int i = 0; i < lineCount(); i++) {
-			if(newSwitch.canConnect(wires.get(i)) || wires.get(i).canConnect(newSwitch)) {
-				System.out.println("connected wire");
-				newSwitch.connect(wires.get(i));
-				wires.get(i).connect(newSwitch);
-			}
-		}
-		for(int i = 0; i < switchCount(); i++) {
-			if(newSwitch.canConnect(switches.get(i)) || switches.get(i).canConnect(newSwitch)) {
-				System.out.println("connected switch");
-				newSwitch.connect(switches.get(i));
-				switches.get(i).connect(newSwitch);
-			}
-		}
-		for(int i = 0; i < readerCount(); i++) {
-			if(newSwitch.canConnect(readers.get(i)) || readers.get(i).canConnect(newSwitch)) {
-				System.out.println("connected reader");
-				newSwitch.connect(readers.get(i));
-				readers.get(i).connect(newSwitch);
-			}
-		}
-		switches.add(newSwitch);
+		addNoLogic(newSwitch);
 	}
 	
 	public void addReader(int x, int y) {
-		if(readers.indexOf(new Reader(x, y, 0)) != -1) return;
+		if(nonLogicItems.indexOf(new Reader(x, y, 0)) != -1) return;
 		Reader newReader = new Reader(x, y, 0);
-		for(int i = 0; i < lineCount(); i++) {
-			if(newReader.canConnect(wires.get(i)) || wires.get(i).canConnect(newReader)) {
-				System.out.println("connected wire");
-				newReader.connect(wires.get(i));
-				wires.get(i).connect(newReader);
-			}
-		}
-		for(int i = 0; i < switchCount(); i++) {
-			if(newReader.canConnect(switches.get(i)) || switches.get(i).canConnect(newReader)) {
-				System.out.println("connected switch");
-				newReader.connect(switches.get(i));
-				switches.get(i).connect(newReader);
-			}
-		}
-		for(int i = 0; i < readerCount(); i++) {
-			if(newReader.canConnect(readers.get(i)) || readers.get(i).canConnect(newReader)) {
-				System.out.println("connected reader");
-				newReader.connect(readers.get(i));
-				readers.get(i).connect(newReader);
-			}
-		}
-		readers.add(newReader);
+		addNoLogic(newReader);
 	}
 	
-	public int lineCount() { //Public method: returns the size of the arraylist (how many wires are there?)
-		return wires.size();
+	public void addAnd(int x, int y) {
+		if(logicItems.indexOf(new AndLogic(x, y, 0)) != -1) return;
+		AndLogic and = new AndLogic(x, y, 0);
+		addLogic(and);
 	}
 	
-	public int switchCount() {
-		return switches.size();
+	public void addOr(int x, int y) {
+		if(logicItems.indexOf(new OrLogic(x, y, 0)) != -1) return;
+		OrLogic or = new OrLogic(x, y, 0);
+		addLogic(or);
 	}
 	
-	public int readerCount() {
-		return readers.size();
+	public void addNot(int x, int y) {
+		if(logicItems.indexOf(new NotLogic(x, y, 0)) != -1) return;
+		NotLogic not = new NotLogic(x, y, 0);
+		addLogic(not);
 	}
 	
-	public Wire getWire(int index) { //Returns a specific wire specified by the index
-		return wires.get(index);
+	public int noLogicCount() {
+		return nonLogicItems.size();
 	}
 	
-	public Switch getSwitch(int index) { //Returns a specific switch specified by the index
-		return switches.get(index);
+	public NonLogic getNoLogic(int index) {
+		return nonLogicItems.get(index);
 	}
 	
-	public Reader getReader(int index) {
-		return readers.get(index);
+	public int logicCount() {
+		return logicItems.size();
+	}
+	
+	public Logic getLogic(int index) {
+		return logicItems.get(index);
 	}
 }

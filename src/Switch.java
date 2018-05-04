@@ -1,6 +1,6 @@
 import java.awt.Graphics;
-public class Switch extends Item
-{
+public class Switch extends NonLogic
+{	
 	public Switch(int x, int y, int dir) {
 		super(x, y, dir);
 		source = true;
@@ -15,8 +15,8 @@ public class Switch extends Item
 		}
 	}
 	
-	public void connect(Item i) {
-		connections.add(i);
+	public void toggle() {
+		state = !state;
 	}
 	
 	public void run() {

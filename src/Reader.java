@@ -1,5 +1,5 @@
 import java.awt.Graphics;
-public class Reader extends Item
+public class Reader extends NonLogic
 {
 	public Reader(int x, int y, int dir) {
 		super(x, y, dir);
@@ -13,10 +13,6 @@ public class Reader extends Item
 		} else {
 			g.fillRect(x - 5, y - 20, 10, 10);
 		}
-	}
-	
-	public void connect(Item i) {
-		connections.add(i);
 	}
 	
 	public void run() {

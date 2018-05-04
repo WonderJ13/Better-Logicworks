@@ -1,7 +1,8 @@
 import java.awt.Graphics;
-public class Wire extends Item
+public class Wire extends NonLogic
 {
 	private int length; //Instance Variables
+	private boolean hasChecked = false;
 	
 	public Wire(int x, int y, int dir, int length) { //Constructor
 		super(x, y, dir);
@@ -48,14 +49,11 @@ public class Wire extends Item
 		} else {
 			iy1 += length;
 		}
-		//System.out.println("I: (" + i.getX() + ", " + i.getY() + ")");
-		//System.out.println("T: (" + x + ", " + y + ")");
-		//System.out.println("A: (" + x1 + ", " + y1 + ")");
+		//System.out.println("I0: (" + i.getX() + ", " + i.getY() + ")");
+		//System.out.println("I1: (" + ix1 + ", " + iy1 + ")");
+		//System.out.println("T0: (" + x + ", " + y + ")");
+		//System.out.println("T1: (" + x1 + ", " + y1 + ")");
 		return (i.getX() == x1 && i.getY() == y1) || (i.getX() == x && i.getY() == y) || (ix1 == x1 && iy1 == y1) || (ix1 == x && iy1 == y);
-	}
-	
-	public void connect(Item i) {
-		connections.add(i);
 	}
 	
 	public void run() {
@@ -64,7 +62,7 @@ public class Wire extends Item
 		boolean found = false;
 		for(int i = 0; i < connections.size(); i++) {
 			if(connections.get(i).hasRan()) {
-				state = connections.get(i).currentState();
+				state = connections.get(i).currentState() || checkSwitches();
 				found = true;
 				break;
 			}
@@ -83,5 +81,33 @@ public class Wire extends Item
 			}
 		}
 		ran = false;
+	}
+	
+	
+	
+	protected boolean hasCheckedSwitches() {
+		return hasChecked;
+	}
+	
+	public boolean checkSwitches() {
+		hasChecked = true;
+		for(int i = 0; i < connections.size(); i++) {
+			if(!(connections.get(i) instanceof Switch)) continue;
+			if(!connections.get(i).hasRan() && connections.get(i).currentState()) {
+				hasChecked = false;
+				return true;
+			}
+		}
+		for(int i = 0; i < connections.size(); i++) {
+			if(!(connections.get(i) instanceof Wire)) continue;
+			Wire check = (Wire) connections.get(i);
+			if(check.hasCheckedSwitches()) continue;
+			if(check.checkSwitches()) {
+				hasChecked = false;
+				return true;
+			}
+		}
+		hasChecked = false;
+		return false;
 	}
 }
